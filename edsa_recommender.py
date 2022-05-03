@@ -34,24 +34,44 @@ import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 
+import requests
+from PIL import Image
+import codecs
+
 # Custom Libraries
 from utils.data_loader import load_movie_titles
+from utils.load import local_css
 from recommenders.collaborative_based import collab_model
 from recommenders.content_based import content_model
+
+#visualizations
+import base64
+from datetime import datetime
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import RendererAgg
+from matplotlib.figure import Figure
+import seaborn as sns
+from wordcloud import WordCloud
+import sweetviz as sv
+_lock = RendererAgg.lock
 
 # Data Loading
 title_list = load_movie_titles('resources/data/movies.csv')
 links = pd.read_csv('movies_link.csv')
+movies_df = pd.read_csv('./resources/data/movies.csv')
+imdb_data= pd.read_csv('./resources/data/imdb_data.csv')
+tags = pd.read_csv('./resources/data/tags.csv')
 
 
 # App declaration
 def main():
+    #load company logo
     st.sidebar.image("resources/imgs/tryy.gif")
 
 
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
-    page_options = ["Recommender System","Solution Overview","EDA","Creator"]
+    page_options = ["Recommender System","Solution Overview","Movie Insights","SweetViz"]
 
     # -------------------------------------------------------------------
     # ----------- !! THIS CODE MUST NOT BE ALTERED !! -------------------
@@ -136,7 +156,51 @@ def main():
     
         st.markdown("<p style='text-align: center; color: white;'>Jeniffer Mariga</p>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: white;'>mukamijeniffer6@gmail.com</p>", unsafe_allow_html=True)
+    if page_selection == "Movie Insights":
+        st.title("Movies Insights")
+        st.image('resources/imgs/dots.png', width=50)
+        st.info("we allow you to visualize movies and user analytics, so that you can understand the user's behaviors")
+        plotviz = ["select for EDA", "-- movie rating distribution",
+                "-- Genre popularity trend",
+                "-- Top Actors in most Movies",
+                "-- Top directors with Most Movies", 
+                "-- Most popular keywords"]
+        plot_selection = st.sidebar.selectbox("Select visualisation", plotviz)
+        if plot_selection == "-- movie rating distribution":
+             st.image("resources/imgs/rating distribution.png",use_column_width=True)
+             st.write("Most movies where scored with a rating of 4 stars with 26.6%. Indicating that most users have not had to be subjected films like BALLISTIC: ECKS VS. SEVER which is the lowest rated film of all time on Rotten Tomatoes")
+        if plot_selection == "-- Genre popularity trend":
+            st.image("resources/imgs/popularity trend.png",use_column_width=True)
+        if plot_selection == "-- Top Actors in most Movies":
+            st.image("resources/imgs/actors.png",use_column_width=True)
+        if plot_selection == "-- Top directors with Most Movies":
+            st.image("resources/imgs/movie directors.png",use_column_width=True)
+        if plot_selection == "-- Most popular keywords":
+            st.image("resources/imgs/keywords.png",use_column_width=True)
+    if page_selection == "SweetViz":
+        def st_display_sweetviz(report_html,width=1000,height=500):
+	        report_file = codecs.open(report_html,'r')
+	        page = report_file.read()
+	        components.html(page,width=width,height=height,scrolling=True)
+        st.image('resources/imgs/sweetviz.png',use_column_width=True)
+        st.markdown('Automated EDA with Sweetviz .SweetViz Library is an open-source Python library that generates beautiful, high-density visualizations to kickstart EDA with 2 code lines.')
+        ds = st.radio("Choose the data source", ("movies data", "ratings data","imdb data"))
+        if ds == "movies data":
+            data_file = 'resources/data/movies.csv'
+        elif ds == "ratings data":
+            data_file = 'resources/data/ratings.csv'
+        else:
+            data_file = 'resources/data/imdb_data.csv'
+        if data_file is not None:
+            df1 = pd.read_csv(data_file)
+            st.dataframe(df1.head())
+            if st.button("Generate Sweetviz Report"):
+                report = sv.analyze(df1)
+                report.show_html()
+                st_display_sweetviz("SWEETVIZ_REPORT.html")
 
+        pass
+        
     # You may want to add more sections here for aspects such as an EDA,
     # or to provide your business pitch.
 
