@@ -39,8 +39,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
 # Importing data
-movies = pd.read_csv('./resources/data/movies.csv' ,sep = ',')
-ratings_data = pd.read_csv('./resources/data/ratings.csv')
+movies = pd.read_csv('../unsupervised_data/unsupervised_movie_data/movies.csv' ,sep = ',')
+ratings_data = pd.read_csv('../unsupervised_data/unsupervised_movie_data/train.csv')
 
 #Drop Timestamp from rating_data
 ratings_data.drop(['timestamp'], axis=1, inplace=True)
@@ -49,7 +49,7 @@ ratings_data.drop(['timestamp'], axis=1, inplace=True)
 ratings = ratings_data.merge(movies[['movieId', 'title']], on='movieId')
 
 # We make use of an SVD model trained on a subset of the MovieLens 10k dataset.
-model=pickle.load(open('./resources/models/SVD.pkl', 'rb'))
+model=pickle.load(open('./resources/models/SVD_model.pkl', 'rb'))
 
 def prediction_item(item_id):
     """Map a given favourite movie to users within the
